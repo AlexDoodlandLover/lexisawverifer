@@ -1,41 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LexiSaw Verification Code System</title>
-<style>
-body {
-background-color: black;
-color: green;
-font-family: 'Courier New', Courier, monospace;
-text-align: center;
-padding: 50px;
-}
-#output {
-white-space: pre;
-margin-top: 20px;
-}
-</style>
+    <title>LexiSaw Server Verification</title>
+    <style>
+        body { font-family: sans-serif; }
+        .container { width: 80%; margin: 50px auto; text-align: center; }
+        input[type="text"] { padding: 10px; margin-bottom: 15px; width: 300px; }
+        button { padding: 10px 20px; cursor: pointer; }
+        #instructions { margin-top: 20px; font-weight: bold; }
+        #disclaimer { font-size: 0.8em; color: gray; margin-top: 10px; }
+    </style>
 </head>
 <body>
-<h1>Welcome to the LexiSaw Verification Code System</h1>
-<button id="generateCode">Generate Verification Code</button>
-<div id="output"></div>
+    <div class="container">
+        <h1>Welcome to LexiSaw!</h1>
+        <p>To verify you're a friendly member, please follow these steps:</p>
 
-<script>
-document.getElementById('generateCode').addEventListener('click', function() {
-const code = Math.floor(100000 + Math.random() * 900000);
-const ip = returnCitySN['cip']; // Assuming returnCitySN is a global object that contains the user's IP
-const logEntry = `Code: ${code}, IP: ${ip}\n`;
-const blob = new Blob([logEntry], { type: 'text/plain' });
-const link = document.createElement('a');
-link.href = window.URL.createObjectURL(blob);
-link.download = 'verification_code_log.txt';
-link.click();
-document.getElementById('output').innerText = `Your verification code is: ${code}\nYour IP address is: ${ip}`;
-});
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/returnCitySN/1.0.0/returnCitySN.min.js"></script>
+        <label for="discordUsername">Your Discord Username:</label><br>
+        <input type="text" id="discordUsername" name="discordUsername"><br><br>
+
+        <button onclick="generateVerificationFile()">Generate Verification File</button>
+
+        <div id="instructions" style="display: none;">
+            <p>A text file named "lexisaw_verification.txt" has been created on your computer (usually in your Downloads folder).</p>
+            <p>Please DM this file to <strong>yumichantheyumifan</strong> on Discord.</p>
+        </div>
+        <p id="disclaimer">Note: This process collects your IP address to help with verification. This information will be kept confidential.</p>
+    </div>
+
+    <script>
+        function generateVerificationFile() {
+            const discordUsernameInput = document.getElementById("discordUsername");
+            const instructionsDiv = document.getElementById("instructions");
+            const discordUsername = discordUsernameInput.value.trim();
+
+            if (!discordUsername) {
+                alert("Please enter your Discord username.");
+                return;
+            }
+
+            const verificationCode = generateRandomCode(16);
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    const ipAddress = data.ip;
+                    const fileContent = `Discord Username: ${discordUsername}\nVerification Code: ${verificationCode}\nIP Address: ${ipAddress}`;
+                    downloadFile("lexisaw_verification.txt", fileContent);
+                    instructionsDiv.style.display = "block";
+                })
+                .catch(error => {
+                    console.error("Could not get IP address:", error);
+                    const fileContent = `Discord Username: ${discordUsername}\nVerification Code: ${verificationCode}\nIP Address: Could not retrieve`;
+                    downloadFile("lexisaw_verification.txt", fileContent);
+                    instructionsDiv.textContent = "A text file named 'lexisaw_verification.txt' has been created. Please DM this file to yumichantheyumifan on Discord (IP address could not be automatically retrieved).";
+                    instructionsDiv.style.display = "block";
+                });
+        }
+
+        function generateRandomCode(length) {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return result;
+        }
+
+        function downloadFile(filename, text) {
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+            element.setAttribute('download', filename);
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+    </script>
 </body>
 </html>
