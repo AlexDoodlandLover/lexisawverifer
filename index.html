@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LexiSaw Verification Code System</title>
+<style>
+body {
+background-color: black;
+color: green;
+font-family: 'Courier New', Courier, monospace;
+text-align: center;
+padding: 50px;
+}
+#output {
+white-space: pre;
+margin-top: 20px;
+}
+</style>
+</head>
+<body>
+<h1>Welcome to the LexiSaw Verification Code System</h1>
+<button id="generateCode">Generate Verification Code</button>
+<div id="output"></div>
+
+<script>
+document.getElementById('generateCode').addEventListener('click', function() {
+const code = Math.floor(100000 + Math.random() * 900000);
+const ip = returnCitySN['cip']; // Assuming returnCitySN is a global object that contains the user's IP
+const logEntry = `Code: ${code}, IP: ${ip}\n`;
+const blob = new Blob([logEntry], { type: 'text/plain' });
+const link = document.createElement('a');
+link.href = window.URL.createObjectURL(blob);
+link.download = 'verification_code_log.txt';
+link.click();
+document.getElementById('output').innerText = `Your verification code is: ${code}\nYour IP address is: ${ip}`;
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/returnCitySN/1.0.0/returnCitySN.min.js"></script>
+</body>
+</html>
